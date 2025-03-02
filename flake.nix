@@ -69,6 +69,15 @@
           default = sayhello;
         };
 
+        apps = rec {
+          default = {
+            type = "app";
+            program = "${pkgs.lib.getExe packages.default}";
+            meta = metadata.meta;
+          };
+          hello = default;
+        };
+
         devShells = {
           default = pkgs.mkShell {
             packages = commonPkgs ++ [packages.sayhello];

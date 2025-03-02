@@ -415,3 +415,77 @@ Added 2 variables.
   unsupported = false;
 }
 ```
+
+Make it an app (a `nix run` target). Adding a `default` and `hello` targets.
+
+```text
+$ vim flake.nix
+
+$ git diff
+--- a/flake.nix
++++ b/flake.nix
+@@ -68,6 +68,15 @@
+           default = sayhello;
+         };
+
++        apps = rec {
++          default = {
++            type = "app";
++            program = "${pkgs.lib.getExe packages.default}";
++            meta = metadata.meta;
++          };
++          hello = default;
++        };
++
+         devShells = {
+           default = pkgs.mkShell {
+             packages = commonPkgs ++ [packages.sayhello];
+
+$ nix flake show
+git+file:///home/vpayno/git_vpayno/nix-notes-shell-scripting
+├───apps
+│   ├───aarch64-darwin
+│   │   ├───default: app: Bash script that says hello
+│   │   └───hello: app: Bash script that says hello
+│   ├───aarch64-linux
+│   │   ├───default: app: Bash script that says hello
+│   │   └───hello: app: Bash script that says hello
+│   ├───x86_64-darwin
+│   │   ├───default: app: Bash script that says hello
+│   │   └───hello: app: Bash script that says hello
+│   └───x86_64-linux
+│       ├───default: app: Bash script that says hello
+│       └───hello: app: Bash script that says hello
+├───devShells
+│   ├───aarch64-darwin
+│   │   └───default omitted (use '--all-systems' to show)
+│   ├───aarch64-linux
+│   │   └───default omitted (use '--all-systems' to show)
+│   ├───x86_64-darwin
+│   │   └───default omitted (use '--all-systems' to show)
+│   └───x86_64-linux
+│       └───default: development environment 'nix-shell'
+└───packages
+    ├───aarch64-darwin
+    │   ├───default omitted (use '--all-systems' to show)
+    │   └───sayhello omitted (use '--all-systems' to show)
+    ├───aarch64-linux
+    │   ├───default omitted (use '--all-systems' to show)
+    │   └───sayhello omitted (use '--all-systems' to show)
+    ├───x86_64-darwin
+    │   ├───default omitted (use '--all-systems' to show)
+    │   └───sayhello omitted (use '--all-systems' to show)
+    └───x86_64-linux
+        ├───default: package 'sayhello'
+        └───sayhello: package 'sayhello'
+
+$ git add flake.nix
+
+$ git commit -m 'nix: add default and hello apps'
+
+$ nix run
+saying hello...
+
+$ nix run .#hello
+saying hello...
+```
