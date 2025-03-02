@@ -33,16 +33,20 @@
               darwin.apple_sdk.frameworks.Security
             ]
           else [];
+
+        scriptSayhello = pkgs.writeShellScriptBin "sayhello" ''
+          echo "saying hello..."
+        '';
       in rec {
         packages = rec {
-          hello = pkgs.hello;
+          sayhello = scriptSayhello;
 
-          default = hello;
+          default = sayhello;
         };
 
         devShells = {
           default = pkgs.mkShell {
-            packages = commonPkgs ++ [packages.hello];
+            packages = commonPkgs ++ [packages.sayhello];
 
             buildInputs = darwinOnlyBuildInputs;
 
