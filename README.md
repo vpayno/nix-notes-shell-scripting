@@ -556,3 +556,16 @@ git+file:///home/vpayno/git_vpayno/nix-notes-shell-scripting
         ├───default: package 'sayhello'
         └───sayhello: package 'sayhello'
 ```
+
+Format flake:
+
+```text
+$ nix fmt .
+Passing directories or non-Nix files (such as ".") is deprecated and will be unsupported soon, please use https://treefmt.com/ instead, e.g. via https://github.com/numtide/treefmt-nix
+
+$ nix fmt ./flake.nix
+
+$ git add ./flake.nix
+
+$ git commit -m "chore: format nix files"
+```

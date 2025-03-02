@@ -8,13 +8,15 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = {
-    nixpkgs,
-    flake-utils,
-    ...
-  }:
+  outputs =
+    {
+      nixpkgs,
+      flake-utils,
+      ...
+    }:
     flake-utils.lib.eachDefaultSystem (
-      system: let
+      system:
+      let
         pkgs = nixpkgs.legacyPackages.${system};
 
         commonPkgs = with pkgs; [
@@ -27,12 +29,13 @@
         ];
 
         darwinOnlyBuildInputs =
-          if pkgs.stdenv.isDarwin
-          then
-            with pkgs; [
+          if pkgs.stdenv.isDarwin then
+            with pkgs;
+            [
               darwin.apple_sdk.frameworks.Security
             ]
-          else [];
+          else
+            [ ];
 
         scriptSayhello = pkgs.writeShellScriptBin "sayhello" ''
           echo "saying hello..."
@@ -43,7 +46,7 @@
             homepage = "https://github.com/vpayno/nix-notes-shell-scripting";
             description = "Bash script that says hello";
             platforms = pkgs.lib.platforms.linux;
-            license = with pkgs.lib.licenses; [mit];
+            license = with pkgs.lib.licenses; [ mit ];
             # maintainers = with pkgs.lib.maintainers; [vpayno];
             maintainers = [
               {
@@ -57,12 +60,13 @@
             available = true;
             broken = false;
             insecure = false;
-            outputsToInstall = ["out"];
+            outputsToInstall = [ "out" ];
             unfree = false;
             unsupported = false;
           };
         };
-      in rec {
+      in
+      rec {
         formatter = pkgs.nixfmt-rfc-style;
 
         packages = rec {
@@ -82,7 +86,7 @@
 
         devShells = {
           default = pkgs.mkShell {
-            packages = commonPkgs ++ [packages.sayhello];
+            packages = commonPkgs ++ [ packages.sayhello ];
 
             buildInputs = darwinOnlyBuildInputs;
 
