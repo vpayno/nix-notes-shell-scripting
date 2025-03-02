@@ -302,3 +302,116 @@ $ nix run .#sayhello
                 ||----w |
                 ||     ||
 ```
+
+Adding package metadata:
+
+```text
+$ nvim flake.nix
+
+$ git diff
+--- a/flake.nix
++++ b/flake.nix
+@@ -36,9 +36,34 @@
+         scriptSayhello = pkgs.writeShellScriptBin "sayhello" ''
+           ${pkgs.lib.getExe pkgs.cowsay} "saying hello..."
+         '';
++
++        metadata = {
++          meta = {
++            homepage = "https://github.com/vpayno/nix-notes-shell-scripting";
++            description = "Bash script that says hello";
++            platforms = pkgs.lib.platforms.linux;
++            license = with pkgs.lib.licenses; [mit];
++            # maintainers = with pkgs.lib.maintainers; [vpayno];
++            maintainers = [
++              {
++                email = "vpayno@users.noreply.github.com";
++                github = "vpayno";
++                githubId = 3181575;
++                name = "Victor Payno";
++              }
++            ];
++            mainProgram = "sayhello";
++            available = true;
++            broken = false;
++            insecure = false;
++            outputsToInstall = ["out"];
++            unfree = false;
++            unsupported = false;
++          };
++        };
+       in rec {
+         packages = rec {
+-          sayhello = scriptSayhello;
++          sayhello = scriptSayhello // metadata;
+
+           default = sayhello;
+         };
+
+$ git add flake.nix
+
+$ git commit -m 'nix: add package metadata'
+```
+
+Show metadata:
+
+```text
+$ nix repl . <<< ':p packages.x86_64-linux.default.meta'
+Nix 2.25.3
+Type :? for help.
+Loading installable 'git+file:///home/vpayno/git_vpayno/nix-notes-shell-scripting#'...
+Added 2 variables.
+{
+  available = true;
+  broken = false;
+  description = "Bash script that says hello";
+  homepage = "https://github.com/vpayno/nix-notes-shell-scripting";
+  insecure = false;
+  license = [
+    {
+      deprecated = false;
+      free = true;
+      fullName = "MIT License";
+      redistributable = true;
+      shortName = "mit";
+      spdxId = "MIT";
+      url = "https://spdx.org/licenses/MIT.html";
+    }
+  ];
+  mainProgram = "sayhello";
+  maintainers = [
+    {
+      email = "vpayno@users.noreply.github.com";
+      github = "vpayno";
+      githubId = 3181575;
+      name = "Victor Payno";
+    }
+  ];
+  outputsToInstall = [ "out" ];
+  platforms = [
+    "aarch64-linux"
+    "armv5tel-linux"
+    "armv6l-linux"
+    "armv7a-linux"
+    "armv7l-linux"
+    "i686-linux"
+    "loongarch64-linux"
+    "m68k-linux"
+    "microblaze-linux"
+    "microblazeel-linux"
+    "mips-linux"
+    "mips64-linux"
+    "mips64el-linux"
+    "mipsel-linux"
+    "powerpc64-linux"
+    "powerpc64le-linux"
+    "riscv32-linux"
+    "riscv64-linux"
+    "s390-linux"
+    "s390x-linux"
+    "x86_64-linux"
+  ];
+  unfree = false;
+  unsupported = false;
+}
+```

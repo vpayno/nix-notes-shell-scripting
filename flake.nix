@@ -37,9 +37,34 @@
         scriptSayhello = pkgs.writeShellScriptBin "sayhello" ''
           echo "saying hello..."
         '';
+
+        metadata = {
+          meta = {
+            homepage = "https://github.com/vpayno/nix-notes-shell-scripting";
+            description = "Bash script that says hello";
+            platforms = pkgs.lib.platforms.linux;
+            license = with pkgs.lib.licenses; [mit];
+            # maintainers = with pkgs.lib.maintainers; [vpayno];
+            maintainers = [
+              {
+                email = "vpayno@users.noreply.github.com";
+                github = "vpayno";
+                githubId = 3181575;
+                name = "Victor Payno";
+              }
+            ];
+            mainProgram = "sayhello";
+            available = true;
+            broken = false;
+            insecure = false;
+            outputsToInstall = ["out"];
+            unfree = false;
+            unsupported = false;
+          };
+        };
       in rec {
         packages = rec {
-          sayhello = scriptSayhello;
+          sayhello = scriptSayhello // metadata;
 
           default = sayhello;
         };
