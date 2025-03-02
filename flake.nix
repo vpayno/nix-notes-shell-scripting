@@ -63,6 +63,8 @@
           };
         };
       in rec {
+        formatter = pkgs.nixfmt-rfc-style;
+
         packages = rec {
           sayhello = scriptSayhello // metadata;
 

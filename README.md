@@ -489,3 +489,70 @@ saying hello...
 $ nix run .#hello
 saying hello...
 ```
+
+## nix fmt
+
+Adding the `formatter` output for `nix fmt`.
+
+```text
+$ vim flake.nix
+
+$ git diff
+--- a/flake.nix
++++ b/flake.nix
+@@ -62,6 +62,8 @@
+           };
+         };
+       in rec {
++        formatter = pkgs.nixfmt-rfc-style;
++
+         packages = rec {
+           sayhello = scriptSayhello // metadata;
+
+$ git add flake.nix
+
+$ git commit -m 'nix: add formatter output'
+
+$ nix flake show
+git+file:///home/vpayno/git_vpayno/nix-notes-shell-scripting
+├───apps
+│   ├───aarch64-darwin
+│   │   ├───default: app: Bash script that says hello
+│   │   └───hello: app: Bash script that says hello
+│   ├───aarch64-linux
+│   │   ├───default: app: Bash script that says hello
+│   │   └───hello: app: Bash script that says hello
+│   ├───x86_64-darwin
+│   │   ├───default: app: Bash script that says hello
+│   │   └───hello: app: Bash script that says hello
+│   └───x86_64-linux
+│       ├───default: app: Bash script that says hello
+│       └───hello: app: Bash script that says hello
+├───devShells
+│   ├───aarch64-darwin
+│   │   └───default omitted (use '--all-systems' to show)
+│   ├───aarch64-linux
+│   │   └───default omitted (use '--all-systems' to show)
+│   ├───x86_64-darwin
+│   │   └───default omitted (use '--all-systems' to show)
+│   └───x86_64-linux
+│       └───default: development environment 'nix-shell'
+├───formatter
+│   ├───aarch64-darwin omitted (use '--all-systems' to show)
+│   ├───aarch64-linux omitted (use '--all-systems' to show)
+│   ├───x86_64-darwin omitted (use '--all-systems' to show)
+│   └───x86_64-linux: package 'nixfmt-unstable-2024-12-04'
+└───packages
+    ├───aarch64-darwin
+    │   ├───default omitted (use '--all-systems' to show)
+    │   └───sayhello omitted (use '--all-systems' to show)
+    ├───aarch64-linux
+    │   ├───default omitted (use '--all-systems' to show)
+    │   └───sayhello omitted (use '--all-systems' to show)
+    ├───x86_64-darwin
+    │   ├───default omitted (use '--all-systems' to show)
+    │   └───sayhello omitted (use '--all-systems' to show)
+    └───x86_64-linux
+        ├───default: package 'sayhello'
+        └───sayhello: package 'sayhello'
+```
