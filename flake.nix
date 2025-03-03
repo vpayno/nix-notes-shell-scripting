@@ -44,7 +44,7 @@
             [ ];
 
         scriptSayhello = pkgs.writeShellScriptBin "sayhello" ''
-          echo "saying hello..."
+          ${pkgs.lib.getExe pkgs.cowsay} "saying hello..."
         '';
 
         metadata = {

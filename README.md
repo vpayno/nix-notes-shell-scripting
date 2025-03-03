@@ -484,10 +484,24 @@ $ git add flake.nix
 $ git commit -m 'nix: add default and hello apps'
 
 $ nix run
-saying hello...
+ _________________
+< saying hello... >
+ -----------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
 
 $ nix run .#hello
-saying hello...
+ _________________
+< saying hello... >
+ -----------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
 ```
 
 ## nix fmt
