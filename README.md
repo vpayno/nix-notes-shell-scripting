@@ -746,3 +746,184 @@ excludes = [
 ]
 on-unmatched = "warn"
 ```
+
+## add saygoodbye script
+
+Adding a second script, `saygoodbye`.
+
+```text
+$ nvim flake.nix
+
+$ git diff flake.nix
+--- a/flake.nix
++++ b/flake.nix
+@@ -1,6 +1,6 @@
+ # flake.nix
+ {
+-  description = "Flake with scripts";
++  description = "Flake with greetings scripts";
+
+   inputs = {
+     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+@@ -47,10 +47,14 @@
+           ${pkgs.lib.getExe pkgs.cowsay} "saying hello..."
+         '';
+
++        scriptSayGoodbye = pkgs.writeShellScriptBin "saygoodbye" ''
++          ${pkgs.lib.getExe pkgs.cowsay} "saying goodbye..."
++        '';
++
+         metadata = {
+           meta = {
+             homepage = "https://github.com/vpayno/nix-notes-shell-scripting";
+-            description = "Bash script that says hello";
++            description = "Bash script that says a greeting";
+             platforms = pkgs.lib.platforms.linux;
+             license = with pkgs.lib.licenses; [ mit ];
+             # maintainers = with pkgs.lib.maintainers; [vpayno];
+@@ -81,6 +85,14 @@
+
+         packages = rec {
+           sayhello = scriptSayHello // metadata;
++          saygoodbye =
++            scriptSayGoodbye
++            // metadata
++            // {
++              meta = {
++                mainProgram = "saygoodbye";
++              };
++            };
+
+           default = sayhello;
+         };
+@@ -92,11 +104,22 @@
+             meta = metadata.meta;
+           };
+           hello = default;
++
++          goodbye = {
++            type = "app";
++            program = "${pkgs.lib.getExe packages.saygoodbye}";
++            meta = metadata.meta;
++          };
+         };
+
+         devShells = {
+           default = pkgs.mkShell {
+-            packages = commonPkgs ++ [ packages.sayhello ];
++            packages =
++              commonPkgs
++              ++ (with packages; [
++                sayhello
++                saygoodbye
++              ]);
+
+             buildInputs = darwinOnlyBuildInputs;
+
+$ git add flake.nix
+
+$ git commit -m 'nix: add saygoodbye script'
+
+$ nix flake show
+git+file:///home/vpayno/git_vpayno/nix-notes-shell-scripting
+├───apps
+│   ├───aarch64-darwin
+│   │   ├───default: app: Bash script that says a greeting
+│   │   ├───goodbye: app: Bash script that says a greeting
+│   │   └───hello: app: Bash script that says a greeting
+│   ├───aarch64-linux
+│   │   ├───default: app: Bash script that says a greeting
+│   │   ├───goodbye: app: Bash script that says a greeting
+│   │   └───hello: app: Bash script that says a greeting
+│   ├───x86_64-darwin
+│   │   ├───default: app: Bash script that says a greeting
+│   │   ├───goodbye: app: Bash script that says a greeting
+│   │   └───hello: app: Bash script that says a greeting
+│   └───x86_64-linux
+│       ├───default: app: Bash script that says a greeting
+│       ├───goodbye: app: Bash script that says a greeting
+│       └───hello: app: Bash script that says a greeting
+├───checks
+│   ├───aarch64-darwin
+│   │   └───formatting omitted (use '--all-systems' to show)
+│   ├───aarch64-linux
+│   │   └───formatting omitted (use '--all-systems' to show)
+│   ├───x86_64-darwin
+│   │   └───formatting omitted (use '--all-systems' to show)
+│   └───x86_64-linux
+│       └───formatting: derivation 'treefmt-check'
+├───devShells
+│   ├───aarch64-darwin
+│   │   └───default omitted (use '--all-systems' to show)
+│   ├───aarch64-linux
+│   │   └───default omitted (use '--all-systems' to show)
+│   ├───x86_64-darwin
+│   │   └───default omitted (use '--all-systems' to show)
+│   └───x86_64-linux
+│       └───default: development environment 'nix-shell'
+├───formatter
+│   ├───aarch64-darwin omitted (use '--all-systems' to show)
+│   ├───aarch64-linux omitted (use '--all-systems' to show)
+│   ├───x86_64-darwin omitted (use '--all-systems' to show)
+│   └───x86_64-linux: package 'treefmt'
+└───packages
+    ├───aarch64-darwin
+    │   ├───default omitted (use '--all-systems' to show)
+    │   ├───saygoodbye omitted (use '--all-systems' to show)
+    │   └───sayhello omitted (use '--all-systems' to show)
+    ├───aarch64-linux
+    │   ├───default omitted (use '--all-systems' to show)
+    │   ├───saygoodbye omitted (use '--all-systems' to show)
+    │   └───sayhello omitted (use '--all-systems' to show)
+    ├───x86_64-darwin
+    │   ├───default omitted (use '--all-systems' to show)
+    │   ├───saygoodbye omitted (use '--all-systems' to show)
+    │   └───sayhello omitted (use '--all-systems' to show)
+    └───x86_64-linux
+        ├───default: package 'sayhello'
+        ├───saygoodbye: package 'saygoodbye'
+        └───sayhello: package 'sayhello'
+
+$ nix build .#saygoodbye
+
+$ tree ./result
+./result
+└── bin
+    └── saygoodbye
+
+2 directories, 1 file
+
+$ cat ./result/bin/saygoodbye
+#!/nix/store/11ciq72n4fdv8rw6wgjgasfv4mjs1jrw-bash-5.2p37/bin/bash
+/nix/store/whb3cxdphwxjlvh57c6rf8p3rjxjlsi8-cowsay-3.8.4/bin/cowsay "saying goodbye..."
+
+$ nix run
+ _________________
+< saying hello... >
+ -----------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+$ nix run .#saygoodbye
+ ___________________
+< saying goodbye... >
+ -------------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+$ nix run .#goodbye
+ ___________________
+< saying goodbye... >
+ -------------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+```

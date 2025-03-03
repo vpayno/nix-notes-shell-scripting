@@ -1,6 +1,6 @@
 # flake.nix
 {
-  description = "Flake with scripts";
+  description = "Flake with greetings scripts";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
@@ -47,10 +47,14 @@
           ${pkgs.lib.getExe pkgs.cowsay} "saying hello..."
         '';
 
+        scriptSayGoodbye = pkgs.writeShellScriptBin "saygoodbye" ''
+          ${pkgs.lib.getExe pkgs.cowsay} "saying goodbye..."
+        '';
+
         metadata = {
           meta = {
             homepage = "https://github.com/vpayno/nix-notes-shell-scripting";
-            description = "Bash script that says hello";
+            description = "Bash script that says a greeting";
             platforms = pkgs.lib.platforms.linux;
             license = with pkgs.lib.licenses; [ mit ];
             # maintainers = with pkgs.lib.maintainers; [vpayno];
@@ -81,6 +85,14 @@
 
         packages = rec {
           sayhello = scriptSayHello // metadata;
+          saygoodbye =
+            scriptSayGoodbye
+            // metadata
+            // {
+              meta = {
+                mainProgram = "saygoodbye";
+              };
+            };
 
           default = sayhello;
         };
@@ -92,11 +104,22 @@
             meta = metadata.meta;
           };
           hello = default;
+
+          goodbye = {
+            type = "app";
+            program = "${pkgs.lib.getExe packages.saygoodbye}";
+            meta = metadata.meta;
+          };
         };
 
         devShells = {
           default = pkgs.mkShell {
-            packages = commonPkgs ++ [ packages.sayhello ];
+            packages =
+              commonPkgs
+              ++ (with packages; [
+                sayhello
+                saygoodbye
+              ]);
 
             buildInputs = darwinOnlyBuildInputs;
 
