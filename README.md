@@ -11,7 +11,7 @@ This is what the flake looks like after the demo.
 
 ```text
 $ nix flake show
-git+file:///home/vpayno/git_vpayno/nix-notes-shell-scripting?ref=refs/heads/main&rev=d33f4966c663cf4bec49d790759566f9a68b1457
+git+file:///home/vpayno/git_vpayno/nix-notes-shell-scripting
 ├───apps
 │   ├───aarch64-darwin
 │   │   ├───default: app: Bash script that says a greeting
@@ -55,18 +55,22 @@ git+file:///home/vpayno/git_vpayno/nix-notes-shell-scripting?ref=refs/heads/main
 └───packages
     ├───aarch64-darwin
     │   ├───default omitted (use '--all-systems' to show)
+    │   ├───greetings omitted (use '--all-systems' to show)
     │   ├───saygoodbye omitted (use '--all-systems' to show)
     │   └───sayhello omitted (use '--all-systems' to show)
     ├───aarch64-linux
     │   ├───default omitted (use '--all-systems' to show)
+    │   ├───greetings omitted (use '--all-systems' to show)
     │   ├───saygoodbye omitted (use '--all-systems' to show)
     │   └───sayhello omitted (use '--all-systems' to show)
     ├───x86_64-darwin
     │   ├───default omitted (use '--all-systems' to show)
+    │   ├───greetings omitted (use '--all-systems' to show)
     │   ├───saygoodbye omitted (use '--all-systems' to show)
     │   └───sayhello omitted (use '--all-systems' to show)
     └───x86_64-linux
         ├───default: package 'sayhello'
+        ├───greetings: package 'Bash-script-that-says-a-greeting'
         ├───saygoodbye: package 'saygoodbye'
         └───sayhello: package 'sayhello'
 ```
@@ -992,4 +996,113 @@ $ nix run .#goodbye
             (__)\       )\/\
                 ||----w |
                 ||     ||
+```
+
+## greetings package
+
+Adding a `greetings` package that has both scripts.
+
+```text
+$ vim flake.nix
+
+$ git diff
+--- a/flake.nix
++++ b/flake.nix
+@@ -94,6 +94,19 @@
+               };
+             };
+
++          greetings = pkgs.stdenv.mkDerivation {
++            name = metadata.meta.description;
++            src = ./.;
++            phases = "installPhase fixupPhase";
++            installPhase = ''
++              mkdir -pv $out/bin
++              # we could just copy everything in the packages
++              cp -v ${pkgs.lib.getExe pkgs.sayhello} $out/bin
++              cp -v ${pkgs.lib.getExe pkgs.saygoodbye} $out/bin
++              ls -lh $out/bin
++            '';
++          };
++
+           default = sayhello;
+         };
+
+$ git add flake.nix
+
+$ nix flake show
+git+file:///home/vpayno/git_vpayno/nix-notes-shell-scripting
+├───apps
+│   ├───aarch64-darwin
+│   │   ├───default: app: Bash script that says a greeting
+│   │   ├───goodbye: app: Bash script that says a greeting
+│   │   └───hello: app: Bash script that says a greeting
+│   ├───aarch64-linux
+│   │   ├───default: app: Bash script that says a greeting
+│   │   ├───goodbye: app: Bash script that says a greeting
+│   │   └───hello: app: Bash script that says a greeting
+│   ├───x86_64-darwin
+│   │   ├───default: app: Bash script that says a greeting
+│   │   ├───goodbye: app: Bash script that says a greeting
+│   │   └───hello: app: Bash script that says a greeting
+│   └───x86_64-linux
+│       ├───default: app: Bash script that says a greeting
+│       ├───goodbye: app: Bash script that says a greeting
+│       └───hello: app: Bash script that says a greeting
+├───checks
+│   ├───aarch64-darwin
+│   │   └───formatting omitted (use '--all-systems' to show)
+│   ├───aarch64-linux
+│   │   └───formatting omitted (use '--all-systems' to show)
+│   ├───x86_64-darwin
+│   │   └───formatting omitted (use '--all-systems' to show)
+│   └───x86_64-linux
+│       └───formatting: derivation 'treefmt-check'
+├───devShells
+│   ├───aarch64-darwin
+│   │   └───default omitted (use '--all-systems' to show)
+│   ├───aarch64-linux
+│   │   └───default omitted (use '--all-systems' to show)
+│   ├───x86_64-darwin
+│   │   └───default omitted (use '--all-systems' to show)
+│   └───x86_64-linux
+│       └───default: development environment 'nix-shell'
+├───formatter
+│   ├───aarch64-darwin omitted (use '--all-systems' to show)
+│   ├───aarch64-linux omitted (use '--all-systems' to show)
+│   ├───x86_64-darwin omitted (use '--all-systems' to show)
+│   └───x86_64-linux: package 'treefmt'
+└───packages
+    ├───aarch64-darwin
+    │   ├───default omitted (use '--all-systems' to show)
+    │   ├───greetings omitted (use '--all-systems' to show)
+    │   ├───saygoodbye omitted (use '--all-systems' to show)
+    │   └───sayhello omitted (use '--all-systems' to show)
+    ├───aarch64-linux
+    │   ├───default omitted (use '--all-systems' to show)
+    │   ├───greetings omitted (use '--all-systems' to show)
+    │   ├───saygoodbye omitted (use '--all-systems' to show)
+    │   └───sayhello omitted (use '--all-systems' to show)
+    ├───x86_64-darwin
+    │   ├───default omitted (use '--all-systems' to show)
+    │   ├───greetings omitted (use '--all-systems' to show)
+    │   ├───saygoodbye omitted (use '--all-systems' to show)
+    │   └───sayhello omitted (use '--all-systems' to show)
+    └───x86_64-linux
+        ├───default: package 'sayhello'
+        ├───greetings: package 'Bash-script-that-says-a-greeting'
+        ├───saygoodbye: package 'saygoodbye'
+        └───sayhello: package 'sayhello'
+
+$ git commit -m 'nix: add greetings package with sayhello and saygoodbye scripts'
+
+$ nix build .#greetings
+
+$ tree ./result
+./result
+└── bin
+    ├── saygoodbye
+    └── sayhello
+
+2 directories, 2 files
 ```

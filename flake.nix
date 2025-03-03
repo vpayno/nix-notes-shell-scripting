@@ -94,6 +94,19 @@
               };
             };
 
+          greetings = pkgs.stdenv.mkDerivation {
+            name = metadata.meta.description;
+            src = ./.;
+            phases = "installPhase fixupPhase";
+            installPhase = ''
+              mkdir -pv $out/bin
+              # we could just copy everything in the packages
+              cp -v ${pkgs.lib.getExe packages.sayhello} $out/bin
+              cp -v ${pkgs.lib.getExe packages.saygoodbye} $out/bin
+              ls -lh $out/bin
+            '';
+          };
+
           default = sayhello;
         };
 
