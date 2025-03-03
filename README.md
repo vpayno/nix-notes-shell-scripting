@@ -3,6 +3,70 @@
 My Nix notes on writing shell scripts with built-in dependency management and
 using neovim/tree-sitter.
 
+## script writers
+
+### pkgs.writeShellScriptBin
+
+Creates a `bash` shell script.
+
+```nix
+pkgs.writeShellScriptBin "scriptname" ''
+	echo "hello from scriptname"
+''
+```
+
+### pkgs.writers.writeLanguageBin
+
+Creates a script in the specified language.
+
+```nix
+pkgs.writers.writeBashBin "bashscript" {} ''
+	echo "hello bash"
+''
+```
+
+```nix
+pkgs.writers.writeZshBin "zshscript" {} ''
+	echo "hello zsh"
+''
+```
+
+```nix
+pkgs.writers.writePython3Bin "pythonscript" {
+	libraries = [
+		pkgs.python312Packages.ansicolors
+	];
+
+} ''
+	from colors import *
+	print(color("hello python", fg='red', bg='yellow'))
+''
+```
+
+```nix
+pkgs.writers.writeRustBin "rustscript" {} ''
+	fn main() {
+		println!("hello world!")
+	}
+''
+```
+
+### pkgs.writeShellApplication
+
+Creates a `bash` script and validates it at build time.
+
+```nix
+pkgs.writeShellApplication {
+	name = "bash-app";
+	runtimeInputs = with pkgs; [
+		cowsay
+	];
+	text = ''
+		cowsay "hello bash-app"
+	'';
+}
+```
+
 ## nix flake
 
 ### nix flake show
