@@ -43,7 +43,7 @@
           else
             [ ];
 
-        scriptSayhello = pkgs.writeShellScriptBin "sayhello" ''
+        scriptSayHello = pkgs.writeShellScriptBin "sayhello" ''
           ${pkgs.lib.getExe pkgs.cowsay} "saying hello..."
         '';
 
@@ -80,7 +80,7 @@
         };
 
         packages = rec {
-          sayhello = scriptSayhello // metadata;
+          sayhello = scriptSayHello // metadata;
 
           default = sayhello;
         };
