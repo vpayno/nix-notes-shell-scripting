@@ -1106,3 +1106,143 @@ $ tree ./result
 
 2 directories, 2 files
 ```
+
+## versions
+
+So we can't get the version from Git because it's an input that needs to be
+passed to the build system to fetch sources, etc.
+
+Adding a variable to set it that can be edited by a new version/release script.
+
+```text
+$ vim flake.nix
+
+$ git diff
+--- a/flake.nix
++++ b/flake.nix
+@@ -21,6 +21,8 @@
+     flake-utils.lib.eachDefaultSystem (
+       system:
+       let
++        version = "v0.1.0";
++
+         pkgs = nixpkgs.legacyPackages.${system};
+
+         treefmtEval = treefmt-nix.lib.evalModule pkgs ./treefmt.nix;
+@@ -84,9 +86,17 @@
+         };
+
+         packages = rec {
+-          sayhello = scriptSayHello // metadata;
++          sayhello =
++            scriptSayHello
++            // {
++              inherit version;
++            }
++            // metadata;
+           saygoodbye =
+             scriptSayGoodbye
++            // {
++              inherit version;
++            }
+             // metadata
+             // {
+               meta = {
+@@ -96,6 +106,7 @@
+
+           greetings = pkgs.stdenv.mkDerivation {
+             name = metadata.meta.description;
++            inherit version;
+             src = ./.;
+             phases = "installPhase fixupPhase";
+             installPhase = ''
+
+$ nix flake show
+git+file:///home/vpayno/git_vpayno/nix-notes-shell-scripting
+├───apps
+│   ├───aarch64-darwin
+│   │   ├───default: app: Bash script that says a greeting
+│   │   ├───goodbye: app: Bash script that says a greeting
+│   │   └───hello: app: Bash script that says a greeting
+│   ├───aarch64-linux
+│   │   ├───default: app: Bash script that says a greeting
+│   │   ├───goodbye: app: Bash script that says a greeting
+│   │   └───hello: app: Bash script that says a greeting
+│   ├───x86_64-darwin
+│   │   ├───default: app: Bash script that says a greeting
+│   │   ├───goodbye: app: Bash script that says a greeting
+│   │   └───hello: app: Bash script that says a greeting
+│   └───x86_64-linux
+│       ├───default: app: Bash script that says a greeting
+│       ├───goodbye: app: Bash script that says a greeting
+│       └───hello: app: Bash script that says a greeting
+├───checks
+│   ├───aarch64-darwin
+│   │   └───formatting omitted (use '--all-systems' to show)
+│   ├───aarch64-linux
+│   │   └───formatting omitted (use '--all-systems' to show)
+│   ├───x86_64-darwin
+│   │   └───formatting omitted (use '--all-systems' to show)
+│   └───x86_64-linux
+│       └───formatting: derivation 'treefmt-check'
+├───devShells
+│   ├───aarch64-darwin
+│   │   └───default omitted (use '--all-systems' to show)
+│   ├───aarch64-linux
+│   │   └───default omitted (use '--all-systems' to show)
+│   ├───x86_64-darwin
+│   │   └───default omitted (use '--all-systems' to show)
+│   └───x86_64-linux
+│       └───default: development environment 'nix-shell'
+├───formatter
+│   ├───aarch64-darwin omitted (use '--all-systems' to show)
+│   ├───aarch64-linux omitted (use '--all-systems' to show)
+│   ├───x86_64-darwin omitted (use '--all-systems' to show)
+│   └───x86_64-linux: package 'treefmt'
+└───packages
+    ├───aarch64-darwin
+    │   ├───default omitted (use '--all-systems' to show)
+    │   ├───greetings omitted (use '--all-systems' to show)
+    │   ├───saygoodbye omitted (use '--all-systems' to show)
+    │   └───sayhello omitted (use '--all-systems' to show)
+    ├───aarch64-linux
+    │   ├───default omitted (use '--all-systems' to show)
+    │   ├───greetings omitted (use '--all-systems' to show)
+    │   ├───saygoodbye omitted (use '--all-systems' to show)
+    │   └───sayhello omitted (use '--all-systems' to show)
+    ├───x86_64-darwin
+    │   ├───default omitted (use '--all-systems' to show)
+    │   ├───greetings omitted (use '--all-systems' to show)
+    │   ├───saygoodbye omitted (use '--all-systems' to show)
+    │   └───sayhello omitted (use '--all-systems' to show)
+    └───x86_64-linux
+        ├───default: package 'sayhello'
+        ├───greetings: package 'Bash-script-that-says-a-greeting'
+        ├───saygoodbye: package 'saygoodbye'
+        └───sayhello: package 'sayhello'
+
+$ git add flake.nix
+
+$ git commit -m 'nix: add package versions'
+
+$ nix repl . <<< ':p packages.x86_64-linux.sayhello.version'
+Nix 2.25.3
+Type :? for help.
+Loading installable 'git+file:///home/vpayno/git_vpayno/nix-notes-shell-scripting#'...
+Added 5 variables.
+v0.1.0
+
+$ nix repl . <<< ':p packages.x86_64-linux.saygoodbye.version'
+Nix 2.25.3
+Type :? for help.
+Loading installable 'git+file:///home/vpayno/git_vpayno/nix-notes-shell-scripting#'...
+Added 5 variables.
+v0.1.0
+
+$ nix repl . <<< ':p packages.x86_64-linux.greetings.version'
+Nix 2.25.3
+Type :? for help.
+Loading installable 'git+file:///home/vpayno/git_vpayno/nix-notes-shell-scripting#'...
+Added 5 variables.
+v0.1.0
+```

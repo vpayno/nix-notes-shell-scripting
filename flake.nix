@@ -21,6 +21,8 @@
     flake-utils.lib.eachDefaultSystem (
       system:
       let
+        version = "v0.1.0";
+
         pkgs = nixpkgs.legacyPackages.${system};
 
         treefmtEval = treefmt-nix.lib.evalModule pkgs ./treefmt.nix;
@@ -84,9 +86,17 @@
         };
 
         packages = rec {
-          sayhello = scriptSayHello // metadata;
+          sayhello =
+            scriptSayHello
+            // {
+              inherit version;
+            }
+            // metadata;
           saygoodbye =
             scriptSayGoodbye
+            // {
+              inherit version;
+            }
             // metadata
             // {
               meta = {
@@ -96,6 +106,7 @@
 
           greetings = pkgs.stdenv.mkDerivation {
             name = metadata.meta.description;
+            inherit version;
             src = ./.;
             phases = "installPhase fixupPhase";
             installPhase = ''
