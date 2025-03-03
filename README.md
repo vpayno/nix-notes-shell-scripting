@@ -569,3 +569,166 @@ $ git add ./flake.nix
 
 $ git commit -m "chore: format nix files"
 ```
+
+## treefmt-nix
+
+Switching the formatter to [treefmt-nix](https://github.com/numtide/treefmt-nix)
+to handle more file types.
+
+```text
+$ nix fmt
+2025/03/02 16:37:02 INFO using config file: /nix/store/kh7xkc9mpq7b2xs2fsrvxnrfn7kxr8mq-treefmt.toml
+traversed 9 files
+emitted 4 files for processing
+formatted 0 files (0 changed) in 27ms
+
+$ git add -u .
+
+$ git commit -m 'chore: format files using nix fmt'
+
+$ nix flake show
+git+file:///home/vpayno/git_vpayno/nix-notes-shell-scripting
+├───apps
+│   ├───aarch64-darwin
+│   │   ├───default: app: Bash script that says hello
+│   │   └───hello: app: Bash script that says hello
+│   ├───aarch64-linux
+│   │   ├───default: app: Bash script that says hello
+│   │   └───hello: app: Bash script that says hello
+│   ├───x86_64-darwin
+│   │   ├───default: app: Bash script that says hello
+│   │   └───hello: app: Bash script that says hello
+│   └───x86_64-linux
+│       ├───default: app: Bash script that says hello
+│       └───hello: app: Bash script that says hello
+├───checks
+│   ├───aarch64-darwin
+│   │   └───formatting omitted (use '--all-systems' to show)
+│   ├───aarch64-linux
+│   │   └───formatting omitted (use '--all-systems' to show)
+│   ├───x86_64-darwin
+│   │   └───formatting omitted (use '--all-systems' to show)
+│   └───x86_64-linux
+│       └───formatting: derivation 'treefmt-check'
+├───devShells
+│   ├───aarch64-darwin
+│   │   └───default omitted (use '--all-systems' to show)
+│   ├───aarch64-linux
+│   │   └───default omitted (use '--all-systems' to show)
+│   ├───x86_64-darwin
+│   │   └───default omitted (use '--all-systems' to show)
+│   └───x86_64-linux
+│       └───default: development environment 'nix-shell'
+├───formatter
+│   ├───aarch64-darwin omitted (use '--all-systems' to show)
+│   ├───aarch64-linux omitted (use '--all-systems' to show)
+│   ├───x86_64-darwin omitted (use '--all-systems' to show)
+│   └───x86_64-linux: package 'treefmt'
+└───packages
+    ├───aarch64-darwin
+    │   ├───default omitted (use '--all-systems' to show)
+    │   └───sayhello omitted (use '--all-systems' to show)
+    ├───aarch64-linux
+    │   ├───default omitted (use '--all-systems' to show)
+    │   └───sayhello omitted (use '--all-systems' to show)
+    ├───x86_64-darwin
+    │   ├───default omitted (use '--all-systems' to show)
+    │   └───sayhello omitted (use '--all-systems' to show)
+    └───x86_64-linux
+        ├───default: package 'sayhello'
+        └───sayhello: package 'sayhello'
+
+$ cat ./treefmt.nix
+# treefmt.nix
+{ ... }:
+{
+  # Used to find the project root
+  projectRootFile = "flake.nix";
+
+  # Enable the nix formatter
+  programs = {
+    nixfmt.enable = true; # nixfmt-rfc-style is now the default for the 'nixfmt' formatter
+    deno.enable = true; # markdown
+    jsonfmt.enable = true; # json
+    taplo.enable = true; # toml
+  };
+
+  settings = {
+    global = {
+      excludes = [
+        "LICENSE"
+        "devbox.json" # jsonfmt keeps re-including it
+      ];
+    };
+    formatter = {
+      jsonfmt = {
+        excludes = [
+          "devbox.json"
+        ];
+      };
+      taplo = {
+        includes = [
+          ".editorconfig"
+        ];
+      };
+    };
+  };
+}
+
+$ cat /nix/store/kh7xkc9mpq7b2xs2fsrvxnrfn7kxr8mq-treefmt.toml
+[formatter.deno]
+command = "/nix/store/ixxpyaqcjlmpr8f0k4lzhmcjzlavfpsd-deno-2.2.2/bin/deno"
+excludes = []
+includes = [
+    "*.css",
+    "*.html",
+    "*.js",
+    "*.json",
+    "*.jsonc",
+    "*.jsx",
+    "*.less",
+    "*.markdown",
+    "*.md",
+    "*.sass",
+    "*.scss",
+    "*.ts",
+    "*.tsx",
+    "*.yaml",
+    "*.yml",
+]
+options = ["fmt"]
+
+[formatter.jsonfmt]
+command = "/nix/store/nirm6d05m9w5z78hrmijjj8h5p4cqd6i-jsonfmt-0.5.0/bin/jsonfmt"
+excludes = ["devbox.json"]
+includes = ["*.json"]
+options = ["-w"]
+
+[formatter.nixfmt]
+command = "/nix/store/jh6h8md8zl2vsvr6bd3hgldm5p3kcfsl-nixfmt-unstable-2024-12-04/bin/nixfmt"
+excludes = []
+includes = ["*.nix"]
+options = []
+
+[formatter.taplo]
+command = "/nix/store/5bj1mdlk4p8a6658dsk2qrwsccwh15h0-taplo-0.9.3/bin/taplo"
+excludes = []
+includes = ["*.toml", ".editorconfig"]
+options = ["format"]
+
+[global]
+excludes = [
+    "*.lock",
+    "*.patch",
+    "package-lock.json",
+    "go.mod",
+    "go.sum",
+    ".gitignore",
+    ".gitmodules",
+    ".hgignore",
+    ".svnignore",
+    "LICENSE",
+    "devbox.json",
+]
+on-unmatched = "warn"
+```
