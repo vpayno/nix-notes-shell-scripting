@@ -1310,3 +1310,206 @@ Loading installable 'git+file:///home/vpayno/git_vpayno/nix-notes-shell-scriptin
 Added 5 variables.
 v0.1.0
 ```
+
+## shell application
+
+Add a shell application.
+
+```text
+$ nvim flake.nix
+
+$ git diff
+--- a/flake.nix
++++ b/flake.nix
+@@ -53,6 +53,16 @@
+           ${pkgs.lib.getExe pkgs.cowsay} "saying goodbye..."
+         '';
+
++        appSayGreeting = pkgs.writeShellApplication {
++          name = "saygreeting";
++          runtimeInputs = with pkgs; [
++            cowsay
++          ];
++          text = ''
++            cowsay "hello there"
++          '';
++        };
++
+         metadata = {
+           meta = {
+             homepage = "https://github.com/vpayno/nix-notes-shell-scripting";
+@@ -104,6 +114,18 @@
+               };
+             };
+
++          saygreeting =
++            appSayGreeting
++            // {
++              inherit version;
++            }
++            // metadata
++            // {
++              meta = {
++                mainProgram = "saygreeting";
++              };
++            };
++
+           greetings = pkgs.stdenv.mkDerivation {
+             name = metadata.meta.description;
+             inherit version;
+@@ -114,6 +136,7 @@
+               # we could just copy everything in the packages
+               cp -v ${pkgs.lib.getExe packages.sayhello} $out/bin
+               cp -v ${pkgs.lib.getExe packages.saygoodbye} $out/bin
++              cp -v ${pkgs.lib.getExe packages.saygreeting} $out/bin
+               ls -lh $out/bin
+             '';
+           };
+@@ -134,6 +157,12 @@
+             program = "${pkgs.lib.getExe packages.saygoodbye}";
+             meta = metadata.meta;
+           };
++
++          greeting = {
++            type = "app";
++            program = "${pkgs.lib.getExe packages.saygreeting}";
++            meta = metadata.meta;
++          };
+         };
+
+         devShells = {
+@@ -143,6 +172,7 @@
+               ++ (with packages; [
+                 sayhello
+                 saygoodbye
++                saygreeting
+               ]);
+
+             buildInputs = darwinOnlyBuildInputs;
+
+$ git add flake.nix
+
+$ git commit -m 'nix: add saygreetings shell application'
+
+$ nix flake show
+git+file:///home/vpayno/git_vpayno/nix-notes-shell-scripting
+├───apps
+│   ├───aarch64-darwin
+│   │   ├───default: app: Bash script that says a greeting
+│   │   ├───goodbye: app: Bash script that says a greeting
+│   │   ├───greeting: app: Bash script that says a greeting
+│   │   └───hello: app: Bash script that says a greeting
+│   ├───aarch64-linux
+│   │   ├───default: app: Bash script that says a greeting
+│   │   ├───goodbye: app: Bash script that says a greeting
+│   │   ├───greeting: app: Bash script that says a greeting
+│   │   └───hello: app: Bash script that says a greeting
+│   ├───x86_64-darwin
+│   │   ├───default: app: Bash script that says a greeting
+│   │   ├───goodbye: app: Bash script that says a greeting
+│   │   ├───greeting: app: Bash script that says a greeting
+│   │   └───hello: app: Bash script that says a greeting
+│   └───x86_64-linux
+│       ├───default: app: Bash script that says a greeting
+│       ├───goodbye: app: Bash script that says a greeting
+│       ├───greeting: app: Bash script that says a greeting
+│       └───hello: app: Bash script that says a greeting
+├───checks
+│   ├───aarch64-darwin
+│   │   └───formatting omitted (use '--all-systems' to show)
+│   ├───aarch64-linux
+│   │   └───formatting omitted (use '--all-systems' to show)
+│   ├───x86_64-darwin
+│   │   └───formatting omitted (use '--all-systems' to show)
+│   └───x86_64-linux
+│       └───formatting: derivation 'treefmt-check'
+├───devShells
+│   ├───aarch64-darwin
+│   │   └───default omitted (use '--all-systems' to show)
+│   ├───aarch64-linux
+│   │   └───default omitted (use '--all-systems' to show)
+│   ├───x86_64-darwin
+│   │   └───default omitted (use '--all-systems' to show)
+│   └───x86_64-linux
+│       └───default: development environment 'nix-shell'
+├───formatter
+│   ├───aarch64-darwin omitted (use '--all-systems' to show)
+│   ├───aarch64-linux omitted (use '--all-systems' to show)
+│   ├───x86_64-darwin omitted (use '--all-systems' to show)
+│   └───x86_64-linux: package 'treefmt'
+└───packages
+    ├───aarch64-darwin
+    │   ├───default omitted (use '--all-systems' to show)
+    │   ├───greetings omitted (use '--all-systems' to show)
+    │   ├───saygoodbye omitted (use '--all-systems' to show)
+    │   ├───saygreeting omitted (use '--all-systems' to show)
+    │   └───sayhello omitted (use '--all-systems' to show)
+    ├───aarch64-linux
+    │   ├───default omitted (use '--all-systems' to show)
+    │   ├───greetings omitted (use '--all-systems' to show)
+    │   ├───saygoodbye omitted (use '--all-systems' to show)
+    │   ├───saygreeting omitted (use '--all-systems' to show)
+    │   └───sayhello omitted (use '--all-systems' to show)
+    ├───x86_64-darwin
+    │   ├───default omitted (use '--all-systems' to show)
+    │   ├───greetings omitted (use '--all-systems' to show)
+    │   ├───saygoodbye omitted (use '--all-systems' to show)
+    │   ├───saygreeting omitted (use '--all-systems' to show)
+    │   └───sayhello omitted (use '--all-systems' to show)
+    └───x86_64-linux
+        ├───default: package 'sayhello'
+        ├───greetings: package 'Bash-script-that-says-a-greeting'
+        ├───saygoodbye: package 'saygoodbye'
+        ├───saygreeting: package 'saygreeting'
+        └───sayhello: package 'sayhello'
+
+$ nix build .#saygreeting
+
+$ tree ./result
+./result
+└── bin
+    └── saygreeting
+
+2 directories, 1 file
+
+$ cat result/bin/saygreeting
+#!/nix/store/11ciq72n4fdv8rw6wgjgasfv4mjs1jrw-bash-5.2p37/bin/bash
+set -o errexit
+set -o nounset
+set -o pipefail
+
+export PATH="/nix/store/whb3cxdphwxjlvh57c6rf8p3rjxjlsi8-cowsay-3.8.4/bin:$PATH"
+
+cowsay "hello there"
+
+$ nix build .#greetings
+
+$ tree ./result
+./result
+└── bin
+    ├── saygoodbye
+    ├── saygreeting
+    └── sayhello
+
+2 directories, 3 files
+
+$ nix run .#saygreeting
+ _____________
+< hello there >
+ -------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+$ nix run .#greeting
+ _____________
+< hello there >
+ -------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+```

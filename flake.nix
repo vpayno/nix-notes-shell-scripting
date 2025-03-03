@@ -53,6 +53,16 @@
           ${pkgs.lib.getExe pkgs.cowsay} "saying goodbye..."
         '';
 
+        appSayGreeting = pkgs.writeShellApplication {
+          name = "saygreeting";
+          runtimeInputs = with pkgs; [
+            cowsay
+          ];
+          text = ''
+            cowsay "hello there"
+          '';
+        };
+
         metadata = {
           meta = {
             homepage = "https://github.com/vpayno/nix-notes-shell-scripting";
@@ -104,6 +114,18 @@
               };
             };
 
+          saygreeting =
+            appSayGreeting
+            // {
+              inherit version;
+            }
+            // metadata
+            // {
+              meta = {
+                mainProgram = "saygreeting";
+              };
+            };
+
           greetings = pkgs.stdenv.mkDerivation {
             name = metadata.meta.description;
             inherit version;
@@ -114,6 +136,7 @@
               # we could just copy everything in the packages
               cp -v ${pkgs.lib.getExe packages.sayhello} $out/bin
               cp -v ${pkgs.lib.getExe packages.saygoodbye} $out/bin
+              cp -v ${pkgs.lib.getExe packages.saygreeting} $out/bin
               ls -lh $out/bin
             '';
           };
@@ -134,6 +157,12 @@
             program = "${pkgs.lib.getExe packages.saygoodbye}";
             meta = metadata.meta;
           };
+
+          greeting = {
+            type = "app";
+            program = "${pkgs.lib.getExe packages.saygreeting}";
+            meta = metadata.meta;
+          };
         };
 
         devShells = {
@@ -143,6 +172,7 @@
               ++ (with packages; [
                 sayhello
                 saygoodbye
+                saygreeting
               ]);
 
             buildInputs = darwinOnlyBuildInputs;
